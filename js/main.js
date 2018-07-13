@@ -1,7 +1,7 @@
 let restaurants,
   neighborhoods,
   cuisines
-var newMap
+var map
 var markers = []
 
 /**
@@ -68,25 +68,8 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
 }
 
 /**
- * Initialize leaflet map, called from HTML.
+ * Initialize Google map, called from HTML.
  */
-// initMap = () => {
-//   self.newMap = L.map('map', {
-//         center: [40.722216, -73.987501],
-//         zoom: 12,
-//         scrollWheelZoom: false
-//       });
-//   L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}', {
-//     mapboxToken: '<your MAPBOX API KEY HERE>',
-//     maxZoom: 18,
-//     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-//       '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-//       'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-//     id: 'mapbox.streets'
-//   }).addTo(newMap);
-
-//   updateRestaurants();
-// }
 window.initMap = () => {
   let loc = {
     lat: 40.722216,
@@ -97,11 +80,6 @@ window.initMap = () => {
     center: loc,
     scrollwheel: false
   });
-
-  google.maps.event.addDomListener(window, 'resize', function () {
-    map.setCenter(loc);
-  });
-
   updateRestaurants();
 } 
 
@@ -138,9 +116,7 @@ resetRestaurants = (restaurants) => {
   ul.innerHTML = '';
 
   // Remove all map markers
-  if (self.markers) {
-    self.markers.forEach(marker => marker.remove());
-  }
+  self.markers.forEach(m => m.setMap(null));
   self.markers = [];
   self.restaurants = restaurants;
 }
@@ -149,11 +125,9 @@ resetRestaurants = (restaurants) => {
  * Create all restaurants HTML and add them to the webpage.
  */
 fillRestaurantsHTML = (restaurants = self.restaurants) => {
-  let tabIndex = 3;
   const ul = document.getElementById('restaurants-list');
   restaurants.forEach(restaurant => {
-    ul.append(createRestaurantHTML(restaurant, tabIndex));
-    tabIndex++;
+    ul.append(createRestaurantHTML(restaurant));
   });
   addMarkersToMap();
 }
@@ -167,10 +141,10 @@ createRestaurantHTML = (restaurant) => {
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
-  image.alt = restaurant.name + ' Main Image';
+  image.alt = restaurant.name + ' Restaurant';
   li.append(image);
 
-  const name = document.createElement('h1');
+  const name = document.createElement('h2');
   name.innerHTML = restaurant.name;
   li.append(name);
 
@@ -195,18 +169,6 @@ createRestaurantHTML = (restaurant) => {
 /**
  * Add markers for current restaurants to the map.
  */
-// addMarkersToMap = (restaurants = self.restaurants) => {
-//   restaurants.forEach(restaurant => {
-//     // Add marker to the map
-//     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.newMap);
-//     marker.on("click", onClick);
-//     function onClick() {
-//       window.location.href = marker.options.url;
-//     }
-//     self.markers.push(marker);
-//   });
-
-// } 
  addMarkersToMap = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
